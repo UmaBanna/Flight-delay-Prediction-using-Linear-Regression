@@ -1,0 +1,217 @@
+Original Dataset:
+root
+ |-- FL_DATE: date (nullable = true)
+ |-- OP_CARRIER: string (nullable = true)
+ |-- OP_CARRIER_FL_NUM: integer (nullable = true)
+ |-- ORIGIN: string (nullable = true)
+ |-- DEST: string (nullable = true)
+ |-- CRS_DEP_TIME: integer (nullable = true)
+ |-- DEP_TIME: double (nullable = true)
+ |-- DEP_DELAY: double (nullable = true)
+ |-- TAXI_OUT: double (nullable = true)
+ |-- WHEELS_OFF: double (nullable = true)
+ |-- WHEELS_ON: double (nullable = true)
+ |-- TAXI_IN: double (nullable = true)
+ |-- CRS_ARR_TIME: integer (nullable = true)
+ |-- ARR_TIME: double (nullable = true)
+ |-- ARR_DELAY: double (nullable = true)
+ |-- CANCELLED: double (nullable = true)
+ |-- CANCELLATION_CODE: string (nullable = true)
+ |-- DIVERTED: double (nullable = true)
+ |-- CRS_ELAPSED_TIME: double (nullable = true)
+ |-- ACTUAL_ELAPSED_TIME: double (nullable = true)
+ |-- AIR_TIME: double (nullable = true)
+ |-- DISTANCE: double (nullable = true)
+ |-- CARRIER_DELAY: double (nullable = true)
+ |-- WEATHER_DELAY: double (nullable = true)
+ |-- NAS_DELAY: double (nullable = true)
+ |-- SECURITY_DELAY: double (nullable = true)
+ |-- LATE_AIRCRAFT_DELAY: double (nullable = true)
+ |-- Unnamed: 27: string (nullable = true)
+
+Selected columns
+root
+ |-- FL_DATE: date (nullable = true)
+ |-- OP_CARRIER: string (nullable = true)
+ |-- ORIGIN: string (nullable = true)
+ |-- DEST: string (nullable = true)
+ |-- CRS_DEP_TIME: integer (nullable = true)
+ |-- DEP_DELAY: double (nullable = true)
+ |-- ARR_DELAY: double (nullable = true)
+ |-- DISTANCE: double (nullable = true)
+
+Create new columns
+root
+ |-- FL_DATE: date (nullable = true)
+ |-- OP_CARRIER: string (nullable = true)
+ |-- ORIGIN: string (nullable = true)
+ |-- DEST: string (nullable = true)
+ |-- CRS_DEP_TIME: integer (nullable = true)
+ |-- DEP_DELAY: double (nullable = true)
+ |-- ARR_DELAY: double (nullable = true)
+ |-- DISTANCE: double (nullable = true)
+ |-- dayOfWeek: double (nullable = true)
+ |-- HH: double (nullable = true)
+ |-- Wnum: double (nullable = true)
+
+Number of airports: 364
+Number of carriers: 19
+
+Feature engineering
+
+Apply String Indexer, then One Hot Encoder on ORIGIN, DEST, OP_CARRIER
+Extract Week of Year, Date of Week from FL_DATE
+Remove minutte from CRS_DEP_TIME to get whole hour (0-23)
+
+Apply One Hot Encoder on Week of Year, Date of Week, Hour
+
+Feature grouping:
+Space = ("DEP_DELAY", "OriginOneHot","DestOneHot", "CarrierOneHot","DISTANCE")
+Time  = ("DEP_DELAY", "WnumOneHot", "dayWOneHot","HHOneHot")
+Space + time = ( "DEP_DELAY", "OriginOneHot","DestOneHot", "CarrierOneHot","DISTANCE", "WnumOneHot", "dayWOneHot","HHOneHot")
+
+1st attempt apply features without DEP_DELAY
+2nd attempt apply features with DEP_DELAY
+
+Split dataset to training and test: 0.8 : 0.2
+
+Models: Linear Regression and Generalized Linear Regression
+
+=========================== WITHOUT DEP_DELAY ==========================
+1. case no filter data
+Number of records: 23903381
+
+Prediction Space lr : rmse: 43.557410003210435
+Prediction Space gr : rmse: 43.557375588430986
+Prediction Time lr : rmse: 43.32282768102313
+Prediction Time gr : rmse: 43.32282488259306
+Prediction Space + Time lr : rmse: 43.1203816089083
+Prediction Space + Time gr : rmse: 43.12035306463695
+Prediction Space lr : mae: 22.242446299848574
+Prediction Space gr : mae: 22.242526669504976
+Prediction Time lr : mae: 22.00706991899871
+Prediction Time gr : mae: 22.007170126049648
+Prediction Space + Time lr : mae: 21.90081353954673
+Prediction Space + Time gr : mae: 21.90107880647363
+Prediction Space lr : r2: 0.009209063689495922
+Prediction Space gr : r2: 0.009210629339890586
+Prediction Time lr : r2: 0.019853901910445115
+Prediction Time gr : r2: 0.019854028535154167
+Prediction Space + Time lr : r2: 0.0289913016384874
+Prediction Space + Time gr : r2: 0.028992587189568653
+
+
+2. case filter ARR_DELAY in {-100 +500}
+Number of records: 23885474
+
+Prediction Space lr : rmse: 37.54913235334062
+Prediction Space gr : rmse: 37.54913235334062
+Prediction Time lr : rmse: 37.304314133992555
+Prediction Time gr : rmse: 37.304314133992555
+Prediction Space + Time lr : rmse: 37.073432234787326
+Prediction Space + Time gr : rmse: 37.073432234787326
+Prediction Space lr : mae: 21.416589580046683
+Prediction Space gr : mae: 21.416589580046683
+Prediction Time lr : mae: 21.207956686738672
+Prediction Time gr : mae: 21.207956686738672
+Prediction Space + Time lr : mae: 21.089333823082377
+Prediction Space + Time gr : mae: 21.089333823082377
+Prediction Space lr : r2: 0.012319171906263748
+Prediction Space gr : r2: 0.012319171906263637
+Prediction Time lr : r2: 0.025156432209104462
+Prediction Time gr : r2: 0.025156432209104462
+Prediction Space + Time lr : r2: 0.037185991379853345
+Prediction Space + Time gr : r2: 0.037185991379853234
+
+3. case filter ARR_DELAY in {-100 +250}
+Number of records: 23802881
+
+Prediction Space lr : rmse: 32.44437407060609
+Prediction Space gr : rmse: 32.44435324118188
+Prediction Time lr : rmse: 32.179805476589856
+Prediction Time gr : rmse: 32.17978447291225
+Prediction Space + Time lr : rmse: 31.940756860649724
+Prediction Space + Time gr : rmse: 31.940712597553603
+Prediction Space lr : mae: 19.956672479177975
+Prediction Space gr : mae: 19.956726747574194
+Prediction Time lr : mae: 19.779220983670374
+Prediction Time gr : mae: 19.779352870238206
+Prediction Space + Time lr : mae: 19.659902442423043
+Prediction Space + Time gr : mae: 19.660130738725773
+Prediction Space lr : r2: 0.015166355304794488
+Prediction Space gr : r2: 0.015167619839047797
+Prediction Time lr : r2: 0.03116257678769374
+Prediction Time gr : r2: 0.03116384150275031
+Prediction Space + Time lr : r2: 0.045503187044746096
+Prediction Space + Time gr : r2: 0.04550583250208973
+
+=========================== WITH DEP_DELAY ==========================
+1. All data
+Number of records: 23903381
+
+Evaluation - ALL data
+Prediction Space lr : rmse: 12.94857604908129
+Prediction Space gr : rmse: 12.948582428897367
+Prediction Time lr : rmse: 13.180736569248712
+Prediction Time gr : rmse: 13.180737029037887
+Prediction Space + Time lr : rmse: 12.9187508702384
+Prediction Space + Time gr : rmse: 12.918756043384729
+Prediction Space lr : mae: 9.023956804165218
+Prediction Space gr : mae: 9.024128401356743
+Prediction Time lr : mae: 9.242528964558465
+Prediction Time gr : mae: 9.242742771685538
+Prediction Space + Time lr : mae: 9.008919229186883
+Prediction Space + Time gr : mae: 9.009091663731143
+Prediction Space lr : r2: 0.9124407661672852
+Prediction Space gr : r2: 0.9124406798856828
+Prediction Time lr : r2: 0.909272992742938
+Prediction Time gr : r2: 0.9092729864132012
+Prediction Space + Time lr : r2: 0.9128436617793346
+Prediction Space + Time gr : r2: 0.9128435919780689
+
+2.case filter ARR_DELAY = {-100 +500}
+Number of records: 23885474
+
+Evaluation - ARR_DELAY in {-100, +500}
+Prediction Space lr : rmse: 12.916925079368731
+Prediction Space gr : rmse: 12.916919380609158
+Prediction Time lr : rmse: 13.150450774175237
+Prediction Time gr : rmse: 13.150445572434661
+Prediction Space + Time lr : rmse: 12.88634338418459
+Prediction Space + Time gr : rmse: 12.886334987490004
+Prediction Space lr : mae: 9.009320150470774
+Prediction Space gr : mae: 9.009507350438154
+Prediction Time lr : mae: 9.228320523534165
+Prediction Time gr : mae: 9.228549150731505
+Prediction Space + Time lr : mae: 8.993827417990357
+Prediction Space + Time gr : mae: 8.994040802087707
+Prediction Space lr : r2: 0.8831213753466305
+Prediction Space gr : r2: 0.883121478476908
+Prediction Time lr : r2: 0.8788570650592793
+Prediction Time gr : r2: 0.8788571608969059
+Prediction Space + Time lr : r2: 0.8836741563215211
+Prediction Space + Time gr : r2: 0.883674307916467
+
+3.case filter ARR_DELAY = {-100 +250}
+Number of records: 23802881
+
+Evaluation - ARR_DELAY in {-100, +250}
+Prediction Space lr : rmse: 12.832111570747815
+Prediction Space gr : rmse: 12.83209779293255
+Prediction Time lr : rmse: 13.065912381469927
+Prediction Time gr : rmse: 13.065903684419045
+Prediction Space + Time lr : rmse: 12.800906742487921
+Prediction Space + Time gr : rmse: 12.80089802120878
+Prediction Space lr : mae: 8.982737644255886
+Prediction Space gr : mae: 8.982907590184926
+Prediction Time lr : mae: 9.199441123334484
+Prediction Time gr : mae: 9.199650864674839
+Prediction Space + Time lr : mae: 8.966337950443572
+Prediction Space + Time gr : mae: 8.966534692759353
+Prediction Space lr : r2: 0.8459433921740525
+Prediction Space gr : r2: 0.8459437229944838
+Prediction Time lr : r2: 0.8402784338671655
+Prediction Time gr : r2: 0.8402786464977242
+Prediction Space + Time lr : r2: 0.8466917436532521
+Prediction Space + Time gr : r2: 0.8466919525515231
+
